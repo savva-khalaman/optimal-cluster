@@ -14,6 +14,7 @@ def main():
     #************************** PARAMETERS *****************************
     fileCollectionSimilarities  = "./CollectionSimilarities/dbToDb.gov2.formattedExp"
     fileCollectionRanks         = "./CollectionRanks/ranks_gov2_crcs_clustfuse_ideal_50_50_0.0_701-850"
+    fileCollectionRanksUpd      = "./CollectionRanks/ranks_gov2_crcs_clustfuse_ideal_50_50_0.0_701-850_upd"
     fileCollectionRanksColumns  = 3
     clusterSize                 = 3
     collectionCutoff            = 5
@@ -25,10 +26,13 @@ def main():
     #clustering.printClusters()
     
     
-    # read colleciton scores
+    # read collection scores
     resManager = ResManager()
     resManager.clean()
     resManager.readResults(fileCollectionRanks, fileCollectionRanksColumns)  
+    
+    # open output stream
+    otp = open(fileCollectionRanksUpd, 'w')
     
     # compute scores
     for query in resManager.getQueries():
@@ -41,8 +45,8 @@ def main():
         rerankedCollections  = scoreFunction.scoreCollections(clustering, resManager, clusterScores, query, boost )
        
         
-        # check if the number of re-ranked collections satisfies collection cutoff
-        # if it does not then append more collections to the end of the list
+        # check if number of re-ranked collections satisfies collection cutoff
+        # if it does not, then append more collections to the end of the list
         if len(rerankedCollections) < collectionCutoff:
             initialCollectionIds    = resManager.getDocs(query)
             initialCollectionScores = resManager.getScores(query)
@@ -53,8 +57,12 @@ def main():
                     rerankedCollections[collectionId] = initialCollectionScores[pos]
                 pos += 1
        
+        
+        # save results to a file
+        for collection in sorted( rerankedCollections.iteritems(), key=itemgetter(1), reverse=True ):
+            otp.write( " ".join( [query, collection[0], str(collection[1])] ) + '\n' )
     
-    
+    otp.close()
     print "ready"
     
     
