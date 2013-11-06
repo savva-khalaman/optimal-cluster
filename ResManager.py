@@ -74,17 +74,17 @@ class ResManager():
     
     def getDocs(self, qryid, counter = None):
         """Returns a list of the retrieved documents for the query"""
-        if counter is None:
+        if (counter is None) or (counter>=len(self.qryDocs[qryid])):
             return self.qryDocs[qryid]
         else:
-            return self.qryDocs[qryid][counter]
+            return self.qryDocs[qryid][:counter]
     
     def getScores(self, qryid, counter = None):
         """Returns a list of the retrieved documents' scores"""
         if counter is None:
             return self.qryScores[qryid]
         else:
-            return self.qryScores[qryid][counter]
+            return self.qryScores[qryid][:counter]
     
     def getDocInfo(self, qryid, pos):
         """Returns a couple: doc & score"""

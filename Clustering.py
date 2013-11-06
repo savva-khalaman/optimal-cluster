@@ -31,12 +31,26 @@ class Clustering:
         return self.similarities[ dbA ][ dbB ]
     
     def _clearAll(self):
-        self.similarities.clear()
+        self._clearClusters()
+        self._clearSimilarities()
+        
+        
+    def _clearClusters(self):
         self.clusters.clear()
+        
+    def _clearSimilarities(self):
+        self.similarities.clear()
     
-    
-    def _getKMostSimilarCollections(self, collection, K ):
-        return sorted( self.similarities[collection].iteritems(), key=itemgetter(1), reverse=True )[:K]
+    def _getKMostSimilarCollections(self, collection, K=-1):
+        """
+        If K is bigger than number of collections in the set or equals -1
+        then function will return all available similarities
+        """
+        numCollections  = len( self.similarities[collection] )
+        similarities    = sorted( self.similarities[collection].iteritems(), key=itemgetter(1), reverse=True )
+        if K == -1 or K >= numCollections:
+            return similarities
+        return similarities[:K]
     
     
     #********************** PUBLIC METHODS ****************************
@@ -69,6 +83,21 @@ class Clustering:
         return self.clusters.iterkeys()
         
         
+    def computeOnlineClusters(self, initSet, clusterSize):
+        
+        # clear from previous results
+        self._clearClusters()
+        
+        # compute cluster for each collection
+        for collection in initSet:
+            self.clusters.setdefault(collection, []).append(collection)
+            # get all available similarities. Note that sims are sorted
+            sims    = self._getKMostSimilarCollections( collection, -1 )
+            pos     = 0
+            while pos < len(sims) and len(self.clusters[collection]) < clusterSize and len(self.clusters[collection])<len(initSet):                
+                if sims[pos][0] != collection and sims[pos][0] in initSet:
+                    self.clusters[collection].append(sims[pos][0])
+                pos += 1
         
         
         
